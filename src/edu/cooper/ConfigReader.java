@@ -9,8 +9,6 @@ import java.util.*;
 public class ConfigReader {
     public static HashMap<String,Road> initializeRoadNetwork(String filename) {
         HashMap<String,Road> ht = new HashMap<>(); // each road contains the list of agents currently using that road
-        ht.put("start",new Road("start",0,0)); // a place to put agents before they start on their journey
-        ht.put("end",new Road("end",0,0)); // a place to put agents after they finish their journey
         try {
             Scanner s = new Scanner(new File(filename));
             s.useDelimiter("[,\\n]");
@@ -45,13 +43,11 @@ public class ConfigReader {
                 if(line.charAt(0)=='#') continue; // python comments!
                 //Get all tokens available in line
                 String[] tokens = line.split(DELIMITER);
-                Road[] route = new Road[tokens.length+1];
-                route[0] = agentHolder.get("start");
-                route[route.length - 1] = agentHolder.get("end");
+                Road[] route = new Road[tokens.length-1];
                 for (int i = 0; i < tokens.length - 1; i++) {
                     String routeName = tokens[i] + tokens[i+1];
                     if(agentHolder.containsKey(routeName)) {
-                        route[i+1] = agentHolder.get(routeName);
+                        route[i] = agentHolder.get(routeName);
                     } else {
                         System.err.println("The road network does not contain "
                                 + "a road from " + tokens[i] +
@@ -66,6 +62,47 @@ public class ConfigReader {
             System.exit(-1);
         }
         return routelist;
+    }
+
+    public static void makeRouteShareMatrix(String matrixfilename,String vectorfilename, ArrayList<Road[]> routelist) {
+        final String DELIMITER = ",";
+        double[][] matrix = new double[routelist.size()][routelist.size()];
+        double[] vector = new double[routelist.size()];
+        try(BufferedWriter mfileWriter = new BufferedWriter(new FileWriter(matrixfilename));
+        BufferedWriter vfileWriter = new BufferedWriter(new FileWriter(vectorfilename))) {
+            String mat = "";
+            String vec = "";
+            for(int i=0; i<routelist.size(); i++) {
+                for(int j=0; j<routelist.size(); j++) {
+                    for(Road r1 : routelist.get(i)) {
+                       if(i==j) {
+                           matrix[i][i] += 1.0 / r1.capacity;
+                           vector[i] += r1.freeflow_tt;
+                       } else {
+                           for(Road r2 : routelist.get(j)) {
+                               if(r1.equals(r2)) {
+                                   matrix[i][j] += 1.0 / r1.capacity;
+                               }
+                           }
+                       }
+                    }
+                    mat += 0.02*matrix[i][j];
+                    if(j==routelist.size()-1) {
+                        mat += "\n";
+                        vec += vector[i] + "\n";
+                    } else {
+                        mat += ",";
+                    }
+                }
+            }
+            System.out.println(mat);
+            vec = vec.substring(0,vec.length()-1);
+            System.out.println(vec);
+            mfileWriter.write(mat);
+            vfileWriter.write(vec);
+        } catch (Exception e) {
+            System.err.println("ConfigReader.makeRouteShareMatrix: A problem occured while trying to create or write to file " + matrixfilename);
+        }
     }
 
     public static ArrayList<Agent[]> initializeAgents(String filename, double timewindow) {

@@ -47,6 +47,6 @@ public class FlowManager {
 
     public static void main(String[] args) {
         FlowManager fm = new FlowManager();
-        fm.doFlow(0);
+        ConfigReader.makeRouteShareMatrix("matrix.csv","vector.csv",fm.routes);
     }
 }
