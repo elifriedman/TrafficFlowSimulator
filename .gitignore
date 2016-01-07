@@ -13,3 +13,6 @@ hs_err_pid*
 
 # editor files
 *~
+/nbproject/private/
+/build/
+

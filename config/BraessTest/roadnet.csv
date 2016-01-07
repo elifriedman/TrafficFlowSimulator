@@ -1,0 +1,6 @@
+node 1, node 2,free flow traveltime,capacity
+S,A,0,0.01
+S,B,45,0
+B,D,0,0.01
+A,D,45,0
+A,B,0,0

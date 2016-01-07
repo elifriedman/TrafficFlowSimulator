@@ -1,8 +1,6 @@
 package edu.cooper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -11,10 +9,14 @@ import java.util.Random;
 public class Agent {
     private Road[] route;
     final int ID;
-
-    public Agent(int ID)  {
+    int[] thresholds;            // Number of drivers above the SO to report weight[i]
+    double[] weights;            // Weights to be used in the TRPF
+    
+    public Agent(int ID, int[] thresholds, double[] weights)  {
         this.route = null;
         this.ID = ID;
+        this.thresholds = thresholds;
+        this.weights = weights;
     }
 
     /**
@@ -26,7 +28,7 @@ public class Agent {
         Random rnd = new Random();
         return rnd.nextInt(routelist.size());
     }
-    public void chooseRoute(Road[] route) {
+    public void travelRoute(Road[] route) {
         this.route = route;
     }
 
