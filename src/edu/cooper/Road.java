@@ -81,7 +81,7 @@ public class Road {
      * Currently the travel time is a linear function of number of drivrs.
      * traveltime(n) = freeflowtraveltime + driverdependence*n;
      * @param freeflowtraveltime
-     * @param capacity
+     * @param driverdependence
      * @param num_cars
      * @return freeflowtraveltime + driverdependence*num_cars
      */

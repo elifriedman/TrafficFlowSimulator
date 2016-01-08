@@ -39,6 +39,8 @@ public class FlowManager {
      */
     TRPF trpf;
 
+    PrettyOutput po;
+    String[] seriesnames;
     int simNumber;
     /**
      * Initialize FlowManager with the parameters set in the .properties file
@@ -48,6 +50,8 @@ public class FlowManager {
      */
     public FlowManager(String paramfile) {
         conf = new ConfigReader(paramfile);
+        po = new PrettyOutput();
+        seriesnames = new String[]{"cars","costs","trpfs"};
         initParams();
         simNumber = 0;
     }
@@ -77,6 +81,13 @@ public class FlowManager {
         agents = conf.getAgents();
         T = conf.getNumPrevRounds();
         trpf = new TRPF(routes.size(), T); // TRPF(# routes, # prev rounds)
+        
+        // initialize pretty output
+        for(int i=0; i<routes.size(); i++) {
+            for (String seriesname : seriesnames) {
+                po.createNewSeries(seriesname + i);
+            }
+        }
     }
 
     /**
@@ -203,11 +214,34 @@ public class FlowManager {
      * @param trpf 
      */
     public void printData(int simNum, int[] routenums, double[] costs, double[] trpf) {
-        System.out.println(""+simNum+":");
-        for (int i=0; i<costs.length; i++) {
-            System.out.printf("%d\t%.3f\t%.3f\n",routenums[i],costs[i],trpf[i]);
+//        System.out.println(""+simNum+":");
+//        for (int i=0; i<costs.length; i++) {
+//            System.out.printf("%d\t%.3f\t%.3f\n",routenums[i],costs[i],trpf[i]);
+//        }
+//        System.out.println("");
+        for(int i=0; i<costs.length; i++) {
+            po.addToSeries(seriesnames[0]+i, ""+simNum, ""+routenums[i]);
+            po.addToSeries(seriesnames[1]+i, ""+simNum, String.format("%.3f",costs[i]));
+            po.addToSeries(seriesnames[2]+i, ""+simNum, String.format("%.3f",trpf[i]));
         }
-        System.out.println("");
+    }
+    public void endSimulation() {
+        for(int i=0; i<routes.size(); i++) {
+            for(String seriesname : seriesnames) {
+                po.endSeries(seriesname+i);
+            }
+        }
+        String[][] combine = new String[seriesnames.length][routes.size()];
+        for(int i=0; i<combine.length; i++) {
+            for(int j=0; j<routes.size(); j++) {
+                combine[i][j] = seriesnames[i] + j;
+            }
+        }
+        for(int i=0; i<seriesnames.length; i++) {
+            po.combineSeries(seriesnames[i], combine[i]);
+            String fname = conf.getParam("js."+seriesnames[i]);
+            po.writeVariable(fname, seriesnames[i], seriesnames[i]);
+        }
     }
     
     /**
@@ -224,5 +258,6 @@ public class FlowManager {
         for(int i=0;i<num_iterations;i++) {
             fm.simulate();
         }
+        fm.endSimulation();
     }
 }

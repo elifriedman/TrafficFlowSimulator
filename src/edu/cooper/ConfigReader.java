@@ -85,7 +85,7 @@ public class ConfigReader {
                 String roadname = c1 + c2;
                 float freeflowtraveltime = s.nextFloat();
                 float capacity = s.nextFloat();
-                Road road = new Road(roadname, capacity, freeflowtraveltime);
+                Road road = new Road(roadname, freeflowtraveltime, capacity);
                 ht.put(roadname, road);
                 ht.put(c2 + c1, road); // make sure it's symmetric
             }
@@ -214,6 +214,10 @@ public class ConfigReader {
 
     public double[] getWeights() {
         return weights;
+    }
+    
+    public String getParam(String param) {
+        return prop.getProperty(param);
     }
 
     /**
