@@ -6,7 +6,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by friedm3 on 8/6/15.
+ * A class for reading the configuration files. The default file is traffic.properties.
+ * 
+ * @author EliFriedman
  */
 public class ConfigReader {
 
@@ -234,7 +236,10 @@ public class ConfigReader {
         return agents;
     }
 
-    public static void makeRouteShareMatrix(String matrixfilename, String vectorfilename, ArrayList<Road[]> routelist) {
+    public int getNumIterations() {
+        return Integer.parseInt(prop.getProperty("num_iterations", "1"));
+    }
+    private static void makeRouteShareMatrix(String matrixfilename, String vectorfilename, ArrayList<Road[]> routelist) {
         final String DELIMITER = ",";
         double[][] matrix = new double[routelist.size()][routelist.size()];
         double[] vector = new double[routelist.size()];
@@ -246,12 +251,12 @@ public class ConfigReader {
                 for (int j = 0; j < routelist.size(); j++) {
                     for (Road r1 : routelist.get(i)) {
                         if (i == j) {
-                            matrix[i][i] += 1.0 / r1.capacity;
+                            matrix[i][i] += 1.0 / r1.driverdependence;
                             vector[i] += r1.freeflow_tt;
                         } else {
                             for (Road r2 : routelist.get(j)) {
                                 if (r1.equals(r2)) {
-                                    matrix[i][j] += 1.0 / r1.capacity;
+                                    matrix[i][j] += 1.0 / r1.driverdependence;
                                 }
                             }
                         }

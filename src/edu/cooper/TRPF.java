@@ -61,8 +61,9 @@ public class TRPF {
     
     /**
      * Gets the TRPF of a specific route. The calculation is:
+     * <br/>
      * TRPF = sum_over_weights(congestion_weight * num_users_reporting_that_weight)/num_reports
-     *      = sum_over_agents(congestion_weight) / num_reports
+     * <br/>= sum_over_agents(congestion_weight) / num_reports
      * The sum is done over the last numrounds number of rounds, where numrounds
      * was specified in the constructor.
      * @param routenumber You'll get the TRPF for route number routenumber

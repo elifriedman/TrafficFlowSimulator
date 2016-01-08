@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+/**
+ * Manages the traffic simulation.
+ * @author EliFriedman
+ */
 public class FlowManager {
     
     /**
@@ -94,7 +98,8 @@ public class FlowManager {
     }
 
     /**
-     * The simulation proceeds in N steps.
+     * Runs one round of simulation.
+     * The simulation proceeds in 4 steps.
      * <ol>
      * <li>   Each agent chooses a route. 
      *    Some of the agents (specified by G in the .properties file), choose a
@@ -147,7 +152,7 @@ public class FlowManager {
             }
         }
         double[] costs = getCosts();
-        printData(simNumber, routenums,costs,currTRPF);
+        printData(simNumber, routenums,costs,trpf.getTRPF());
         simNumber++;
         return costs;
     }
@@ -174,18 +179,49 @@ public class FlowManager {
         }
         return routecosts;
     }
-
-    public void printData(int simNum, int[] routenums, double[] costs, double[] trpf) {
-        String s = ""+simNum + ": ";
-        for (int i=0; i<costs.length; i++) {
-            s += "" + routenums[i] + "\t";
+    
+    /**
+     * Returns the average travel time of all agents.
+     * @param costs The costs for each route.
+     * @param routenums The number of drivers on each route.
+     * @return Returns the average travel time of an agent.
+     */
+    public double getAvgCost(double[] costs, int[] routenums) {
+        double sum = 0;
+        int total = agents.size();
+        for(int i=0; i<costs.length; i++) {
+            sum += costs[i]*routenums[i];
         }
-        System.out.println(s);
+        return sum/total;
+    }
+
+    /**
+     * Used by simulation() to print out the useful information.
+     * @param simNum
+     * @param routenums
+     * @param costs
+     * @param trpf 
+     */
+    public void printData(int simNum, int[] routenums, double[] costs, double[] trpf) {
+        System.out.println(""+simNum+":");
+        for (int i=0; i<costs.length; i++) {
+            System.out.printf("%d\t%.3f\t%.3f\n",routenums[i],costs[i],trpf[i]);
+        }
+        System.out.println("");
+    }
+    
+    /**
+     * The number of simulation iterations.
+     * @return The number of simulation rounds.
+     */
+    public int getNumIterations() {
+        return conf.getNumIterations();
     }
     
     public static void main(String[] args) {
         FlowManager fm = new FlowManager("config/traffic.properties");
-        for(int i=0;i<100;i++) {
+        int num_iterations = fm.getNumIterations();
+        for(int i=0;i<num_iterations;i++) {
             fm.simulate();
         }
     }
