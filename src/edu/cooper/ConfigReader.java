@@ -15,18 +15,51 @@ public class ConfigReader {
 
     double[] weights;
     int[] thresholds;
+    ArrayList<Road[]> routeList;
     
     public ConfigReader(String propfile) {
         prop = new Properties();
         try {
             prop.load(new FileInputStream(propfile));
             this.initializeWeights();
+            this.initializeNumRoutes();
         } catch (FileNotFoundException ex) {
             System.err.println("File not found!");
             Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void setNumAgents(int num_agents) {
+        prop.setProperty("num_agents", "" + num_agents);
+    }
+
+    public void setChangeFrac(double G) {
+        prop.setProperty("G", "" + G);
+    }
+
+    public void setTRPFFrac(double p) {
+        prop.setProperty("p", "" + p);
+    }
+
+    public void setNumPrevRounds(int T) {
+        prop.setProperty("T", "" + T);
+    }
+
+    public void setWeights(int[] thresholds, double[] weights) {
+        if (thresholds.length != weights.length) {
+            Logger.getLogger(ConfigReader.class.getName())
+                    .log(Level.SEVERE, "thresholds and weights need to be the same length as the number of routes.");
+            return;
+        }
+        String s = "";
+        int L = thresholds.length;
+        for (int i = 0; i < L - 1; i++) {
+            s += "" + thresholds[i] + ":" + weights[i] + ",";
+        }
+        s += "" + thresholds[L - 1] + ":" + weights[L - 1];
+        prop.setProperty("w", "" + s);
     }
 
     /**
@@ -68,6 +101,14 @@ public class ConfigReader {
         return ht;
     }
 
+    private void initializeNumRoutes() {
+        int n = 1;
+        String line;
+        while ((line = prop.getProperty("route" + n)) != null) {
+            n++;
+        }
+        num_routes = n;
+    }
     /**
      *
      * @param agentHolder
@@ -145,7 +186,7 @@ public class ConfigReader {
         return users;
     }
 
-    public int getNumRounds() {
+    public int getNumPrevRounds() {
         int rounds = Integer.parseInt(prop.getProperty("T"));
         Logger.getLogger(ConfigReader.class.getName()).log(Level.INFO, "Loaded: T = {0}",
                 rounds);
@@ -153,25 +194,26 @@ public class ConfigReader {
     }
 
     private void initializeWeights() {
-        String wstr = prop.getProperty("w").replaceAll(" ", "").replaceAll("\t","");
+        String wstr = prop.getProperty("w").replaceAll(" ", "").replaceAll("\t", "");
         String[] twlist = wstr.split(",");
         weights = new double[twlist.length];
         thresholds = new int[twlist.length];
-        
-        for(int i=0; i<twlist.length; i++) {
+
+        for (int i = 0; i < twlist.length; i++) {
             String[] tw = twlist[i].split(":");
             thresholds[i] = Integer.parseInt(tw[0]);
             weights[i] = Double.parseDouble(tw[1]);
         }
     }
-    
+
     public int[] getThresholds() {
         return thresholds;
     }
+
     public double[] getWeights() {
         return weights;
     }
-    
+
     /**
      * Initializes the agents. The number of agents is specified in the
      * "num_agents" property in the "traffic.properties" file.
@@ -183,8 +225,10 @@ public class ConfigReader {
         Logger.getLogger(ConfigReader.class.getName()).log(
                 Level.INFO, "Loaded: {0} agents.", num_agents);
         ArrayList<Agent> agents = new ArrayList<>(num_agents);
+        double fracChange = getChangeFrac();
+        double fracTRPF = getTRPFFrac();
         for (int id = 0; id < num_agents; id++) {
-            Agent a = new Agent(id,thresholds,weights);
+            Agent a = new Agent(id, num_routes,thresholds, weights, fracChange, fracTRPF);
             agents.add(a);
         }
         return agents;
