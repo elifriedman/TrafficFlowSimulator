@@ -4,7 +4,7 @@ compile: src/edu/cooper/*.java
 	javac  -d class/ -sourcepath src: src/edu/cooper/*.java
 
 run:
-	java -cp class/: edu.cooper.FlowManager
+	java -cp class/: edu.cooper.FlowManager $(dir)
 
 clean:
 	rm -rf ./class

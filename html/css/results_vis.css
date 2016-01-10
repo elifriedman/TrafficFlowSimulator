@@ -17,6 +17,15 @@ body {
   display: inline-block;
   border: 1px solid #D0D6D9;
 }
+
+#introtxt {
+}
+#paramContainer {
+    margin-left: 50%;
+    margin-right: 50%;
+    width: 40%;
+}
+
 .table {
   display: inline-block;
   background-color: #FFFFFC;

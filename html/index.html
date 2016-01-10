@@ -1,35 +1,48 @@
 <!DOCTYPE HTML>
 <html>
 
-<head>
-<script src="js/vis_numcars.js"></script>
-<script src="js/vis_costs.js"></script>
-<script src="js/vis_trpf.js"></script>
-<script src="js/results_vis.js"></script>
-<script type="text/javascript" src="js/canvasjs.min.js"></script>
-<link href="css/results_vis.css" rel="stylesheet" type="text/css"></link>
-</head>
-<body>
+    <head>
+        <title>Simulation Visualization</title>
+        <script src="js/vis_cars.js"></script>
+        <script src="js/vis_costs.js"></script>
+        <script src="js/vis_trpfs.js"></script>
+        <script src="js/params.js"></script>
+        <script src="js/results_vis.js"></script>
+        <script type="text/javascript" src="js/canvasjs.min.js"></script>
+        <link href="css/results_vis.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="graphCont title" style="text-align: center; font-size: 2em;">
+            Simulation Results Visualization
+        </div>
+        <div class="graphCont text">
+            <div id="introtxt">
+                The following charts display the results of the simulation. 
+                Each chart shows how one of the outputs varies over time. 
+                The first chart show the number of cars on each route over time. 
+                The second chart shows the cost per driver per route over time. 
+                The third chart shows how the Traffic Route Preference Function 
+                varies over time per route.
+                <br/>
+                The following table shows the simulation parameters in the 
+                ".properties" file:
+            </div>
+            <div id="paramContainer"></div>
+        </div>
 
-<div class="graphCont title" style="text-align: center; font-size: 2em;">
-Simulation Results Visualization
-</div>
-<div class="graphCont text">
-The following charts display the results of the simulation. Each chart shows how one of the parameters varies over time. The first chart show the number of cars on each route over time. The second chart shows the cost per driver per route over time. The third chart shows how the Traffic Route Preference Function varies over time per route.
-</div>
-<div class="graphCont">
-  <div class="graph" id="carsContainer"></div>
-  <div class="table" id="carsTable"></div>
-</div>
-<div class="graphCont">
-  <div class="graph" id="costsContainer"></div>
-  <div class="table" id="costsTable"></div>
-</div>
-<div class="graphCont">
-  <div class="graph" id="trpfContainer"></div>
-  <div class="table" id="trpfTable"></div>
-</div>
-</body>
+        <div class="graphCont">
+            <div class="graph" id="carsContainer"></div>
+            <div class="table" id="carsTable"></div>
+        </div>
+        <div class="graphCont">
+            <div class="graph" id="costsContainer"></div>
+            <div class="table" id="costsTable"></div>
+        </div>
+        <div class="graphCont">
+            <div class="graph" id="trpfContainer"></div>
+            <div class="table" id="trpfTable"></div>
+        </div>
+    </body>
 
 </html>
 

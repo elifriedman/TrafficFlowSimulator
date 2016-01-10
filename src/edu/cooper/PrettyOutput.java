@@ -46,7 +46,7 @@ public class PrettyOutput {
         s += "]";
         series.put(newname, s);
     }
-
+    
     public void writeVariable(String filename, String varname, String seriesname) {
         String s = "var " + varname + " = ";
         s += series.get(seriesname);

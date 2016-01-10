@@ -1,7 +1,10 @@
 package edu.cooper;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -88,6 +91,7 @@ public class FlowManager {
                 po.createNewSeries(seriesname + i);
             }
         }
+        printParameters();
     }
 
     /**
@@ -214,16 +218,35 @@ public class FlowManager {
      * @param trpf 
      */
     public void printData(int simNum, int[] routenums, double[] costs, double[] trpf) {
-//        System.out.println(""+simNum+":");
-//        for (int i=0; i<costs.length; i++) {
-//            System.out.printf("%d\t%.3f\t%.3f\n",routenums[i],costs[i],trpf[i]);
-//        }
-//        System.out.println("");
         for(int i=0; i<costs.length; i++) {
             po.addToSeries(seriesnames[0]+i, ""+simNum, ""+routenums[i]);
             po.addToSeries(seriesnames[1]+i, ""+simNum, String.format("%.3f",costs[i]));
             po.addToSeries(seriesnames[2]+i, ""+simNum, String.format("%.3f",trpf[i]));
         }
+    }
+    
+    public void printParameters() {
+        String paramfile = "html/js/params.js";
+        po.createNewSeries("params");
+        po.addToSeries("params", "'p'", String.valueOf(conf.getTRPFFrac()));
+        po.addToSeries("params", "'G'", String.valueOf(conf.getChangeFrac()));
+        po.addToSeries("params", "'T'", String.valueOf(conf.getNumPrevRounds()));
+        double[] weights = conf.getWeights();
+        String weightstr = "[";
+        for(double weight : weights) {
+            weightstr += String.format("%f,", weight);
+        }
+        weightstr += "]";
+        int[] thrshs = conf.getThresholds();
+        String thrshstr = "[";
+        for(int thrsh : thrshs) {
+            thrshstr += String.format("%d,", thrsh);
+        }
+        thrshstr += "]";
+        po.addToSeries("params", "'thresholds'", thrshstr);
+        po.addToSeries("params", "'weights'", weightstr);
+        po.endSeries("params");
+        po.writeVariable(paramfile, "params", "params");
     }
     public void endSimulation() {
         for(int i=0; i<routes.size(); i++) {
@@ -239,7 +262,7 @@ public class FlowManager {
         }
         for(int i=0; i<seriesnames.length; i++) {
             po.combineSeries(seriesnames[i], combine[i]);
-            String fname = conf.getParam("js."+seriesnames[i]);
+            String fname = "html/js/vis_"+seriesnames[i]+".js";
             po.writeVariable(fname, seriesnames[i], seriesnames[i]);
         }
     }
@@ -252,8 +275,18 @@ public class FlowManager {
         return conf.getNumIterations();
     }
     
+    public static void checkDirectoryStructure(String base) {
+        
+    }
     public static void main(String[] args) {
-        FlowManager fm = new FlowManager("config/traffic.properties");
+        FlowManager fm;
+        if(args.length < 1 || !(new File(args[0])).exists()) {
+//            Logger.getLogger(FlowManager.class.getName())
+//                    .log(Level.SEVERE,"usage: make run dir=simulation_directory");
+            fm = new FlowManager("config/traffic.properties");
+        } else {
+            fm = new FlowManager(args[0]);
+        }
         int num_iterations = fm.getNumIterations();
         for(int i=0;i<num_iterations;i++) {
             fm.simulate();

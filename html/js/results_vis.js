@@ -37,8 +37,9 @@ var getChart = function(divName,title,titleY,datasrc) {
     }
   });
   return chart;
-}
-var createTable = function(divID, data,tbltitle) {
+};
+
+var createDataTable = function(divID, data,tbltitle) {
   var div = document.getElementById(divID);
   var table = document.createElement("table");
   var head = table.createTHead();
@@ -61,15 +62,38 @@ var createTable = function(divID, data,tbltitle) {
     }
   }
   div.appendChild(table);
-}
+};
 
+var createParamTable = function(divID,params) {
+    var div = document.getElementById(divID);
+    var table = document.createElement("table");
+    var head = table.createTHead();
+    var title = head.insertRow().insertCell(0);
+    title.colSpan = 2;
+    title.className = "title";
+    title.appendChild(document.createTextNode("Simulation Parameters"));
+    var headrow = head.insertRow();
+    headrow.insertCell(0).appendChild(document.createTextNode("Parameter"));
+    headrow.insertCell(1).appendChild(document.createTextNode("Value"));
+    var body = table.createTBody();
+    for(var i=0; i<params.length; i++) {
+      var row = body.insertRow();
+      row.className="alt"+(i%2);
+      var key = params[i].x;
+      var val = params[i].y;
+      row.insertCell(0).appendChild(document.createTextNode(key));
+      row.insertCell(1).appendChild(document.createTextNode(val));
+    }
+    div.appendChild(table);
+};
 
 window.onload = function () {
   getChart("carsContainer","# Cars per Route over time","# Cars",cars).render();
   getChart("costsContainer","Costs per Route over time","Cost per Car",costs).render();
   getChart("trpfContainer","Traffic Route Preference Function over time","TRPF",trpfs).render();
-  createTable("carsTable",cars,"# Cars per Route");
-  createTable("costsTable",costs,"Cost per Route");
-  createTable("trpfTable",trpfs,"Traffic Route Preference Function");
+  createDataTable("carsTable",cars,"# Cars per Route");
+  createDataTable("costsTable",costs,"Cost per Route");
+  createDataTable("trpfTable",trpfs,"Traffic Route Preference Function");
+  createParamTable("paramContainer",params);
 }
 
