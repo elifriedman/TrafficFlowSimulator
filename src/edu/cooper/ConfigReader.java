@@ -73,10 +73,9 @@ public class ConfigReader {
      *
      * @return A HashMap which maps road names to a Road object.
      */
-    public HashMap<String, Road> getRoadNetwork() {
+    public HashMap<String, Road> getRoadNetwork(String roadnet) {
         HashMap<String, Road> ht = new HashMap<>(); // each road contains the list of agents currently using that road
-        String roadfile = prop.getProperty("road_network_filename");
-        try (Scanner s = new Scanner(new File(roadfile))) {
+        try (Scanner s = new Scanner(new File(roadnet))) {
             s.useDelimiter("[,\\n]");
             s.nextLine();
             while (s.hasNext()) {
@@ -92,12 +91,12 @@ public class ConfigReader {
         } catch (FileNotFoundException fe) {
             Logger.getLogger(ConfigReader.class.getName()).log(
                     Level.SEVERE,
-                    "Could not find roadnet file: '{0}'", roadfile);
+                    "Could not find roadnet file: '{0}'", roadnet);
             System.exit(-1);
         } catch (InputMismatchException im) {
             Logger.getLogger(ConfigReader.class.getName()).log(
                     Level.SEVERE,
-                    "Please check that file '{0}' is in the correct place and has the correct format.", roadfile);
+                    "Please check that file '{0}' is in the correct place and has the correct format.", roadnet);
             System.exit(-1);
         }
         return ht;

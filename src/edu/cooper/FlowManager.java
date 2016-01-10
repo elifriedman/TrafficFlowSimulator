@@ -9,10 +9,11 @@ import java.util.logging.Logger;
 
 /**
  * Manages the traffic simulation.
+ *
  * @author EliFriedman
  */
 public class FlowManager {
-    
+
     /**
      * Parses the configuration .properties file to get the parameters.
      */
@@ -26,9 +27,9 @@ public class FlowManager {
      */
     ArrayList<Road[]> routes;
     /**
-     *  List of optimal # of drivers for each route
+     * List of optimal # of drivers for each route
      */
-    int[] SOlist;           
+    int[] SOlist;
     /**
      * List of agents.
      */
@@ -36,7 +37,7 @@ public class FlowManager {
     /**
      * Number of previous rounds to use for calculating the TRPF
      */
-    int T;                       
+    int T;
     /**
      * The Traffic Route Preference Function object
      */
@@ -45,16 +46,22 @@ public class FlowManager {
     PrettyOutput po;
     String[] seriesnames;
     int simNumber;
+
+    String basepath;
+
     /**
      * Initialize FlowManager with the parameters set in the .properties file
      * specified by paramfile
      *
-     * @param paramfile The .properties file from which to load the paraemters.
+     * @param basepath A path to a folder which should contain a
+     * traffic.properties file from which to load the paraemters, a roadnet.csv
+     * file, from which to load the roadnet, and an output/ folder.
      */
-    public FlowManager(String paramfile) {
-        conf = new ConfigReader(paramfile);
+    public FlowManager(String basepath) {
+        this.basepath = basepath;
+        conf = new ConfigReader(basepath + "/traffic.properties");
         po = new PrettyOutput();
-        seriesnames = new String[]{"cars","costs","trpfs"};
+        seriesnames = new String[]{"cars", "costs", "trpfs"};
         initParams();
         simNumber = 0;
     }
@@ -78,15 +85,15 @@ public class FlowManager {
      * @param paramfile A .parameter file with format key=value
      */
     private void initParams() {
-        roads = conf.getRoadNetwork();
+        roads = conf.getRoadNetwork(this.basepath + "/roadnet.csv");
         routes = conf.getRouteList(roads);
         SOlist = conf.getSOList();
         agents = conf.getAgents();
         T = conf.getNumPrevRounds();
         trpf = new TRPF(routes.size(), T); // TRPF(# routes, # prev rounds)
-        
+
         // initialize pretty output
-        for(int i=0; i<routes.size(); i++) {
+        for (int i = 0; i < routes.size(); i++) {
             for (String seriesname : seriesnames) {
                 po.createNewSeries(seriesname + i);
             }
@@ -113,32 +120,32 @@ public class FlowManager {
     }
 
     /**
-     * Runs one round of simulation.
-     * The simulation proceeds in 4 steps.
+     * Runs one round of simulation. The simulation proceeds in 4 steps.
      * <ol>
-     * <li>   Each agent chooses a route. 
-     *    Some of the agents (specified by G in the .properties file), choose a
-     *    new route. The other 1-G agents use the same route as before.
-     *    Some of the agents (specified by p in the .properties file), make use 
-     *    of the TRPF to decide which route. The other (1-p)G choose randomly.
-     *    The number of agents on each route is collected.</li>
-     * <li> The agents are added to their chosen routes and travel to their 
-     *    destinations.</li>
-     * <li> The agents that use the TRPF report the congestion level on their 
-     *    route using the difference between the number of cars currently on the
-     *    route and the number of cars that there should be at the System
-     *    Optimum.</li>
-     * <li>   Metrics are printed out.</li>
+     * <li> Each agent chooses a route. Some of the agents (specified by G in
+     * the .properties file), choose a new route. The other 1-G agents use the
+     * same route as before. Some of the agents (specified by p in the
+     * .properties file), make use of the TRPF to decide which route. The other
+     * (1-p)G choose randomly. The number of agents on each route is
+     * collected.</li>
+     * <li> The agents are added to their chosen routes and travel to their
+     * destinations.</li>
+     * <li> The agents that use the TRPF report the congestion level on their
+     * route using the difference between the number of cars currently on the
+     * route and the number of cars that there should be at the System
+     * Optimum.</li>
+     * <li> Metrics are printed out.</li>
      * </ol>
+     *
      * @return Returns the cost of each route.
      */
     public double[] simulate() {
         // We're starting a new round, so we'll clear the roads.
         this.clearRoads();
-        
+
         // contains the number of agents using each route
         int[] routenums = new int[routes.size()];
-        
+
         double[] currTRPF = trpf.getTRPF();
         // Agents select which route
         for (Agent a : agents) {
@@ -167,7 +174,7 @@ public class FlowManager {
             }
         }
         double[] costs = getCosts();
-        printData(simNumber, routenums,costs,trpf.getTRPF());
+        printData(simNumber, routenums, costs, trpf.getTRPF());
         simNumber++;
         return costs;
     }
@@ -194,9 +201,10 @@ public class FlowManager {
         }
         return routecosts;
     }
-    
+
     /**
      * Returns the average travel time of all agents.
+     *
      * @param costs The costs for each route.
      * @param routenums The number of drivers on each route.
      * @return Returns the average travel time of an agent.
@@ -204,42 +212,43 @@ public class FlowManager {
     public double getAvgCost(double[] costs, int[] routenums) {
         double sum = 0;
         int total = agents.size();
-        for(int i=0; i<costs.length; i++) {
-            sum += costs[i]*routenums[i];
+        for (int i = 0; i < costs.length; i++) {
+            sum += costs[i] * routenums[i];
         }
-        return sum/total;
+        return sum / total;
     }
 
     /**
      * Used by simulation() to print out the useful information.
+     *
      * @param simNum
      * @param routenums
      * @param costs
-     * @param trpf 
+     * @param trpf
      */
     public void printData(int simNum, int[] routenums, double[] costs, double[] trpf) {
-        for(int i=0; i<costs.length; i++) {
-            po.addToSeries(seriesnames[0]+i, ""+simNum, ""+routenums[i]);
-            po.addToSeries(seriesnames[1]+i, ""+simNum, String.format("%.3f",costs[i]));
-            po.addToSeries(seriesnames[2]+i, ""+simNum, String.format("%.3f",trpf[i]));
+        for (int i = 0; i < costs.length; i++) {
+            po.addToSeries(seriesnames[0] + i, "" + simNum, "" + routenums[i]);
+            po.addToSeries(seriesnames[1] + i, "" + simNum, String.format("%.3f", costs[i]));
+            po.addToSeries(seriesnames[2] + i, "" + simNum, String.format("%.3f", trpf[i]));
         }
     }
-    
+
     public void printParameters() {
-        String paramfile = "html/js/params.js";
+        String paramfile = this.basepath + "/output/js/params.js";
         po.createNewSeries("params");
         po.addToSeries("params", "'p'", String.valueOf(conf.getTRPFFrac()));
         po.addToSeries("params", "'G'", String.valueOf(conf.getChangeFrac()));
         po.addToSeries("params", "'T'", String.valueOf(conf.getNumPrevRounds()));
         double[] weights = conf.getWeights();
         String weightstr = "[";
-        for(double weight : weights) {
+        for (double weight : weights) {
             weightstr += String.format("%f,", weight);
         }
         weightstr += "]";
         int[] thrshs = conf.getThresholds();
         String thrshstr = "[";
-        for(int thrsh : thrshs) {
+        for (int thrsh : thrshs) {
             thrshstr += String.format("%d,", thrsh);
         }
         thrshstr += "]";
@@ -248,47 +257,53 @@ public class FlowManager {
         po.endSeries("params");
         po.writeVariable(paramfile, "params", "params");
     }
+
     public void endSimulation() {
-        for(int i=0; i<routes.size(); i++) {
-            for(String seriesname : seriesnames) {
-                po.endSeries(seriesname+i);
+        for (int i = 0; i < routes.size(); i++) {
+            for (String seriesname : seriesnames) {
+                po.endSeries(seriesname + i);
             }
         }
         String[][] combine = new String[seriesnames.length][routes.size()];
-        for(int i=0; i<combine.length; i++) {
-            for(int j=0; j<routes.size(); j++) {
+        for (int i = 0; i < combine.length; i++) {
+            for (int j = 0; j < routes.size(); j++) {
                 combine[i][j] = seriesnames[i] + j;
             }
         }
-        for(int i=0; i<seriesnames.length; i++) {
+        for (int i = 0; i < seriesnames.length; i++) {
             po.combineSeries(seriesnames[i], combine[i]);
-            String fname = "html/js/vis_"+seriesnames[i]+".js";
+            String fname = this.basepath+"/output/js/vis_" + seriesnames[i] + ".js";
             po.writeVariable(fname, seriesnames[i], seriesnames[i]);
         }
     }
-    
+
     /**
      * The number of simulation iterations.
+     *
      * @return The number of simulation rounds.
      */
     public int getNumIterations() {
         return conf.getNumIterations();
     }
-    
-    public static void checkDirectoryStructure(String base) {
-        
+
+    public static boolean checkDirectoryStructure(String base) {
+        return (new File(base + "/traffic.properties")).exists()
+                && (new File(base + "/roadnet.csv")).exists()
+                && (new File(base + "/output")).exists();
     }
+
     public static void main(String[] args) {
         FlowManager fm;
-        if(args.length < 1 || !(new File(args[0])).exists()) {
-//            Logger.getLogger(FlowManager.class.getName())
-//                    .log(Level.SEVERE,"usage: make run dir=simulation_directory");
-            fm = new FlowManager("config/traffic.properties");
-        } else {
-            fm = new FlowManager(args[0]);
+        if (args.length < 1
+                || !(new File(args[0])).exists()
+                || !checkDirectoryStructure(args[0])) {
+            Logger.getLogger(FlowManager.class.getName())
+                    .log(Level.SEVERE, "usage: make run dir=simulation_directory");
+            System.exit(-1);
         }
+        fm = new FlowManager(args[0]);
         int num_iterations = fm.getNumIterations();
-        for(int i=0;i<num_iterations;i++) {
+        for (int i = 0; i < num_iterations; i++) {
             fm.simulate();
         }
         fm.endSimulation();
