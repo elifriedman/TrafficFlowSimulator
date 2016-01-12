@@ -235,7 +235,7 @@ public class FlowManager {
     }
 
     public void printParameters() {
-        String paramfile = this.basepath + "/output/js/params.js";
+        String paramfile = this.basepath + "/js/params.js";
         po.createNewSeries("params");
         po.addToSeries("params", "'p'", String.valueOf(conf.getTRPFFrac()));
         po.addToSeries("params", "'G'", String.valueOf(conf.getChangeFrac()));
@@ -272,7 +272,7 @@ public class FlowManager {
         }
         for (int i = 0; i < seriesnames.length; i++) {
             po.combineSeries(seriesnames[i], combine[i]);
-            String fname = this.basepath+"/output/js/vis_" + seriesnames[i] + ".js";
+            String fname = this.basepath+"/js/vis_" + seriesnames[i] + ".js";
             po.writeVariable(fname, seriesnames[i], seriesnames[i]);
         }
     }
@@ -287,18 +287,29 @@ public class FlowManager {
     }
 
     public static boolean checkDirectoryStructure(String base) {
-        return (new File(base + "/traffic.properties")).exists()
-                && (new File(base + "/roadnet.csv")).exists()
-                && (new File(base + "/output")).exists();
+        boolean ret =  (new File(base + "/traffic.properties")).exists()
+                && (new File(base + "/roadnet.csv")).exists();
+        File jsdir = new File(base + "/js");
+        if (!jsdir.exists()) {
+            if(!jsdir.mkdir()) {
+                Logger.getLogger(FlowManager.class.getName())
+                    .log(Level.SEVERE, "could not create directory %s/js!",base);
+                System.exit(-1);
+            }
+        }
+        return ret;
     }
 
     public static void main(String[] args) {
         FlowManager fm;
         if (args.length < 1
-                || !(new File(args[0])).exists()
-                || !checkDirectoryStructure(args[0])) {
+                || !(new File(args[0])).exists()) {
             Logger.getLogger(FlowManager.class.getName())
                     .log(Level.SEVERE, "usage: make run dir=simulation_directory");
+            System.exit(-1);
+        } else if(!checkDirectoryStructure(args[0])) {
+            Logger.getLogger(FlowManager.class.getName())
+                    .log(Level.SEVERE, "your directory does not have the correct format.");
             System.exit(-1);
         }
         fm = new FlowManager(args[0]);
