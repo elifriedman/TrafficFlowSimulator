@@ -52,7 +52,7 @@ make run dir=directory_name
 ```
 For example, to run the BraessNet simulation, type:
 ```
-make run dir=BraessNet
+make run dir=simulations/BraessNet
 ```
 If you don't have make installed, you can instead type:
 ```
