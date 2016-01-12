@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Traffic Flow Simulator : A flow based simulation of traffic over a road network for the purpose of testing distributed concensus algorithms that try to minimize average travel time.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Traffic Flow Simulator</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/elifriedman/TrafficFlowSimulator">View on GitHub</a>
+
+          <h1 id="project_title">Traffic Flow Simulator</h1>
+          <h2 id="project_tagline">A flow based simulation of traffic over a road network for the purpose of testing distributed concensus algorithms that try to minimize average travel time.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/elifriedman/TrafficFlowSimulator/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/elifriedman/TrafficFlowSimulator/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="trafficflowsimulator" class="anchor" href="#trafficflowsimulator" aria-hidden="true"><span class="octicon octicon-link"></span></a>TrafficFlowSimulator</h1>
+
+<p>A flow based simulation of traffic over a road network for the purpose of testing distributed concensus algorithms that try to minimize average travel time.</p>
+
+<h2>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<p>The program simulates traffic flowing through a user-specified road network with linear latency functions. It outputs the results of the simulation to an HTML file (output.html) for easy viewing.</p>
+
+<p>The simulation reads in a road network and the costs of each road. It also reads a list of the possible routes that the agents can use, and the optimal number of drivers that should be on each route. </p>
+
+<p>The simulation proceeds in the following steps:</p>
+
+<ol>
+<li>Each agent chooses a route.
+
+<ul>
+<li>Only a randomly chosen fraction of the agents (<code>G</code> in the properties file) will choose a new route. The rest will use the same route they used last time.</li>
+<li>A fraction of the agents (<code>p</code> in the propeties file) will use the Traffic Route Preference Function (TRPF) to choose their route. The rest will choose a route uniformly at random.</li>
+</ul>
+</li>
+<li>The cost of each route is calculated. It's just the sum of the costs of each road on that route.</li>
+<li>The agents who use the TRPF report the levels of congestion on their routes and the TRPF is updated.</li>
+<li>The output is printed to a file.</li>
+<li>The simulation goes to step 1 and repeats until <code>num_iterations</code> have been reached.</li>
+</ol>
+
+<h3>
+<a id="traffic-route-preference-function" class="anchor" href="#traffic-route-preference-function" aria-hidden="true"><span class="octicon octicon-link"></span></a>Traffic Route Preference Function</h3>
+
+<p>A randomly chosen fraction of the drivers (determined by <code>p</code> in the properties file) will use the Traffic Route Preference function to choose their route. Drivers who use the TRPF will report the level of congestion on the route that they just used. The purpose of the function is to encourage drivers to avoid the routes that have too many people on them and to use the routes that have too few. </p>
+
+<p>After drivers have travelled along a route, they report a level of congestion. Here, "congestion" is defined by the number of drivers above the system optimum (Note that this simplifying assumption is probably not reflective of reality). If the number of drivers on a route is n<sub>route</sub> and the system optimum of that route is <strong>n<sup>*</sup><sub>route</sub></strong>, then a user will report a congestion level <code>w</code> if n<sub>route</sub> - <strong>n<sup>*</sup><sub>route</sub></strong> &gt; <code>threshold_w</code>, where <code>w</code> and <code>threshold_w</code> are properties in the properties file.</p>
+
+<p>The TRPF sums up all the congestion reports for a given route over the last <code>T</code> iterations.
+The TRPF, is a function of iteration number t and the route, is given by:</p>
+
+<p><img src="http://www.ee.cooper.edu/%7Efriedm3/imgs/research_img1.png" alt="TRPF Equation"></p>
+
+<p>where</p>
+
+<p><img src="http://www.ee.cooper.edu/%7Efriedm3/imgs/research_img3.png" alt="ntauroute Equation"></p>
+
+<p>and</p>
+
+<p><img src="http://www.ee.cooper.edu/%7Efriedm3/imgs/research_img2.png" alt="N Equation"></p>
+
+<h2>
+<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to use</h2>
+
+<h3>
+<a id="compiling-and-running" class="anchor" href="#compiling-and-running" aria-hidden="true"><span class="octicon octicon-link"></span></a>Compiling and running</h3>
+
+<p>To compile the code, use a terminal to navigate to the TrafficFlowNetwork folder and type:</p>
+
+<pre><code>make compile
+</code></pre>
+
+<p>If you don't have make installed, you can instead type:</p>
+
+<pre><code>javac  -d class/ -sourcepath src: src/edu/cooper/*.java
+</code></pre>
+
+<p>To run the code, you should have a directory already set up that contains a "traffic.properties" file and a "roadnet.csv" file. For example, the "BraessNet" folder is already set up appropriately.
+To run the simulation, type:</p>
+
+<pre><code>make run dir=directory_name
+</code></pre>
+
+<p>For example, to run the BraessNet simulation, type:</p>
+
+<pre><code>make run dir=BraessNet
+</code></pre>
+
+<p>If you don't have make installed, you can instead type:</p>
+
+<pre><code>java -cp class/ edu.cooper.FlowManager directory_name
+cp src/index.html directory_name/output.html
+</code></pre>
+
+<p>After you run it, if you didn't get any errors, you can open "output.html" in any browser to view the output graphs.</p>
+
+<h3>
+<a id="file-structure" class="anchor" href="#file-structure" aria-hidden="true"><span class="octicon octicon-link"></span></a>File Structure</h3>
+
+<p>To run the simulation, you need to give it a directory name that contains a few specific files.
+The directory needs to contain files called "roadnet.csv" and "traffic.properties".</p>
+
+<h5>
+<a id="roadnetcsv" class="anchor" href="#roadnetcsv" aria-hidden="true"><span class="octicon octicon-link"></span></a>roadnet.csv</h5>
+
+<p>This file contains the road network. Each line represents one road in the network. A road is defined by the names of the nodes on either side, and the cost function, cost(n) = a + n b
+Each line (except for the first) should have the following format:
+node1,node2,a,b
+where node1 and node2 are the names of the nodes, and a and b could be any real number.</p>
+
+<h5>
+<a id="trafficproperties" class="anchor" href="#trafficproperties" aria-hidden="true"><span class="octicon octicon-link"></span></a>traffic.properties</h5>
+
+<p>This file contains the various parameters you can play with. The parameters are as follows:</p>
+
+<h6>
+<a id="algorithm-parameters" class="anchor" href="#algorithm-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Algorithm Parameters</h6>
+
+<p>These parameters control the Traffic Route Preference Function Algorithm.</p>
+
+<table>
+<thead>
+<tr>
+<th align="center">Parameter</th>
+<th align="center">Format</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">w</td>
+<td align="center">threshold1:weight1,threshold2:weight2,...</td>
+<td align="left">threshold1 is a threshold above the System Optimum and weight1 is the actual weight. In other words, "30:2" means that if there are more than 30 drivers above the System Optimum for a route, than the drivers on that route could report a congestion level of 2</td>
+</tr>
+<tr>
+<td align="center">p</td>
+<td align="center">0 &lt;= p &lt;= 1</td>
+<td align="left">
+<code>p</code> is the fraction of agents using the TRPF. When an agent is initialized, it will "decide" whether to use the TRPF by choosing a random number from 0 to 1 and seeing if it's less than p. If it is, it will use the TRPF. If not, it won't.</td>
+</tr>
+<tr>
+<td align="center">T</td>
+<td align="center">integer &gt;= 1</td>
+<td align="left">T is the number of previous rounds to use for calculating the TRPF.</td>
+</tr>
+</tbody>
+</table>
+
+<h6>
+<a id="model-parameters" class="anchor" href="#model-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Model Parameters</h6>
+
+<p>These parameters control the traffic model that we're using.</p>
+
+<table>
+<thead>
+<tr>
+<th align="center">Parameter</th>
+<th align="center">Format</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">num_agents</td>
+<td align="center">integer &gt; 0</td>
+<td align="left">The total number of agents travelling</td>
+</tr>
+<tr>
+<td align="center">G</td>
+<td align="center">0 &lt;=G&lt;= 1</td>
+<td align="left">G is the fraction of agents who will change routes from one iteration to the next. Whenever an agent needs to choose a route, it will pick a random number from 0 to 1. If the number is less than G, then the agent chooses a new route, otherwise, it uses the same route as last time.</td>
+</tr>
+<tr>
+<td align="center">routeN</td>
+<td align="center">"N" should actually be a number</td>
+<td align="left">List the possible routes that an agent can use. e.g. route1=S,M,D. route2=S,N,D</td>
+</tr>
+<tr>
+<td align="center">routeN.opt</td>
+<td align="center">"N" should actually be a number</td>
+<td align="left">routeN.opt is the number of drivers who should travel on route "N" at the System Optimum. e.g. route1.opt=100. route2.opt=100. <strong>This needs to be calculated based on <code>num_agents</code>!</strong>
+</td>
+</tr>
+</tbody>
+</table>
+
+<h6>
+<a id="simulation-parameters" class="anchor" href="#simulation-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Simulation Parameters</h6>
+
+<p>These parameters control the simulation.</p>
+
+<table>
+<thead>
+<tr>
+<th align="center">Parameter</th>
+<th align="center">Format</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">num_iterations</td>
+<td align="center">integer &gt; 0</td>
+<td align="left">Number of rounds to run the simulation.</td>
+</tr>
+</tbody>
+</table>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Traffic Flow Simulator maintained by <a href="https://github.com/elifriedman">elifriedman</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
