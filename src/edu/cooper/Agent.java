@@ -12,7 +12,9 @@ import java.util.logging.Logger;
  */
 public class Agent {
 
-    private int routechoice;
+    int routechoice;
+    double[] routeCosts;
+    int[] routesTravelled;
     final int ID;
     int[] thresholds;            // Number of drivers above the SO to report weight[i]
     double[] weights;            // Weights to be used in the TRPF
@@ -53,6 +55,8 @@ public class Agent {
         this.weights = weights;
         this.G = fracChange;
         this.numroutes = num_routes;
+        this.routeCosts = new double[num_routes];
+        this.routesTravelled = new int[num_routes];
         this.rng = new Random();
         this.routechoice = rng.nextInt(numroutes); // Initialize with a random choice
         this.useTRPF = false;
@@ -62,12 +66,35 @@ public class Agent {
     }
 
     /**
-     * Choose randomly from one of the routes in routelist
+     * Chooses one of the lowest cost routes, or, with probability 0.05, chooses a random route.
+     * Choose randomly from among the routes that this agent knows to have the minimum average cost.
      *
      * @return An int from 0 to number_routes representing the chosen route.
      */
     public int chooseRoute() {
-        routechoice = rng.nextInt(numroutes);
+        double explore = rng.nextDouble();
+        if(explore<0.05) {
+            routechoice = rng.nextInt(numroutes);
+            this.routesTravelled[routechoice]++;
+            return routechoice;
+        }
+        double min = routeCosts[0];
+        for (int i = 0; i < routeCosts.length; i++) {
+            if (routeCosts[i] < min) {
+                min = routeCosts[i];
+            }
+        }
+        ArrayList<Integer> min_index = new ArrayList<>();
+        for (int i = 0; i < routeCosts.length; i++) {
+            if (Math.abs(routeCosts[i] - min) <= 0.1) {
+                min_index.add(i);
+            }
+        }
+
+        int r = rng.nextInt(min_index.size());
+        routechoice = min_index.get(r);
+        this.routesTravelled[routechoice]++;
+
         return routechoice;
     }
 
@@ -111,14 +138,27 @@ public class Agent {
                 // If more than one route are equivalent, choose randomly
                 int r = rng.nextInt(max_index.size());
                 routechoice = max_index.get(r);
+                this.routesTravelled[routechoice]++;
                 return routechoice;
             } else {
-                routechoice = rng.nextInt(numroutes);
-                return routechoice;
+                return chooseRoute();
             }
         } else { // if we're not changing routes, return our last route.
+            this.routesTravelled[routechoice]++;
             return routechoice;
         }
+    }
+
+    /**
+     * After travelling a route, the agent should receive the cost of travelling on that route.
+     * The agent updates its knowledge about that route's cost, which is the average cost of all the times it's
+     * travelled on that route.
+     * @param cost The cost of the route the agent just travelled on.
+     */
+    public void receiveRouteCost(double cost) {
+        int N = this.routesTravelled[routechoice];
+        double Anm1 = this.routeCosts[routechoice];
+        this.routeCosts[routechoice] = 1.0/N * ((N-1)*Anm1 + cost); // calculate new average from old average
     }
 
     /**

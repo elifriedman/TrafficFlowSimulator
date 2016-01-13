@@ -18,6 +18,7 @@ public class TRPF {
     private int numroutes;
     private int numrounds;
     private int currentround;
+
     /**
      * Keeps track of the Traffic Route Preference Function for each route
      * for the last numrounds rounds.
@@ -39,7 +40,7 @@ public class TRPF {
      * the proper place.
      */
     public void newReport() {
-        currentround = (currentround+1)%numrounds; // 0 <= currentround <= numrounds
+        currentround = (currentround+1)%numrounds; // 0 <= currentround < numrounds
         // reset the current round to 0
         for(int i=0; i < numroutes; i++) {
             reports[currentround][i] = 0;
@@ -95,4 +96,5 @@ public class TRPF {
         }
         return trpf;
     }
+
 }

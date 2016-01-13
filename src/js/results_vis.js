@@ -58,6 +58,7 @@ var getAvgCost = function() {
         showInLegend: true,
         name: "Average Cost",
         color: "black",
+        lineDashType: "longDash",
         dataPoints: avgCost
     };
 };

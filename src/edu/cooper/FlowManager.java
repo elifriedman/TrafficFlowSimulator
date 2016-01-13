@@ -162,18 +162,22 @@ public class FlowManager {
             }
         }
 
+        // get route costs
+        double[] costs = getCosts();
+
         // Get congestion reports and update the TRPF.
         trpf.newReport();
         for (Agent a : agents) {
+            int route = a.getPrevRouteChoice();
             if (a.usesTRPF()) {
-                int route = a.getPrevRouteChoice();
                 int congestion = routenums[route] - SOlist[route];
                 // Agent compares congestion to thresholds
                 double report = a.congestionReport(congestion);
                 trpf.addReport(route, report);
             }
+            double c = costs[route];
+            a.receiveRouteCost(c);
         }
-        double[] costs = getCosts();
         printData(simNumber, routenums, costs, trpf.getTRPF());
         simNumber++;
         return costs;
