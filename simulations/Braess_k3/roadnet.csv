@@ -1,0 +1,14 @@
+#node 1, node 2,free flow traveltime,driverdependent time
+S,V1,0,3
+S,V2,0,2
+S,V3,0,1
+S,W3,1,0
+V1,W1,0,0
+V2,W1,1,0
+V2,W2,0,0
+V3,W2,1,0
+V3,W3,0,0
+V1,T,1,0
+W1,T,0,1
+W2,T,0,2
+W3,T,0,3
