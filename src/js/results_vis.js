@@ -63,7 +63,12 @@ var getAvgCost = function() {
     };
 };
 
-var createDataTable = function(divID, data,tbltitle) {
+var createDataTable = function(divID, data,tbltitle,data_,data_title) {
+  var extra=false;
+  if(typeof(data_)!='undefined') {
+    extra = true;
+    data_ = data_.dataPoints; 
+  }
   var div = document.getElementById(divID);
   var table = document.createElement("table");
   var head = table.createTHead();
@@ -73,16 +78,31 @@ var createDataTable = function(divID, data,tbltitle) {
   title.appendChild(document.createTextNode(tbltitle));
   var headrow = head.insertRow();
   headrow.insertCell(0).appendChild(document.createTextNode("Iteration #"));
+  var indx=1;
+  if(extra) {
+    title.colSpan++;
+    headrow.insertCell(1).appendChild(document.createTextNode(data_title));
+    indx++;
+  }
+
   for(var i=0; i<data.length; i++) {
-    headrow.insertCell(i+1).appendChild(document.createTextNode("Route #"+(i+1)));
+    headrow.insertCell(indx).appendChild(document.createTextNode("Route #"+(i+1)));
+    indx++;
   }
   var body = table.createTBody();
   for(var i=0; i<data[0].length; i++) {
     var row = body.insertRow();
     row.className="alt"+(i%2);
     row.insertCell(0).appendChild(document.createTextNode(i+1));
+    var indx=1;
+    if(extra) {
+      var d = Math.round(100*data_[i].y)/100;
+      row.insertCell(1).appendChild(document.createTextNode(d));
+      indx++;
+    }
     for(var j=0; j<data.length; j++) {
-      row.insertCell((j+1)).appendChild(document.createTextNode(data[j][i].y));
+      row.insertCell(indx).appendChild(document.createTextNode(data[j][i].y));
+      indx++;
     }
   }
   div.appendChild(table);
@@ -112,11 +132,12 @@ var createParamTable = function(divID,params) {
 };
 
 window.onload = function () {
+  var avgCosts = getAvgCost();
   getChart("carsContainer","# Cars per Route over time","# Cars",cars).render();
-  getChart("costsContainer","Costs per Route over time","Cost per Car",costs,[getAvgCost()]).render();
+  getChart("costsContainer","Costs per Route over time","Cost per Car",costs,[avgCosts]).render();
   getChart("trpfContainer","Traffic Route Preference Function over time","TRPF",trpfs).render();
   createDataTable("carsTable",cars,"# Cars per Route");
-  createDataTable("costsTable",costs,"Cost per Route");
+  createDataTable("costsTable",costs,"Cost per Route",avgCosts,"Average Cost");
   createDataTable("trpfTable",trpfs,"Traffic Route Preference Function");
   createParamTable("paramContainer",params);
 }

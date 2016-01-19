@@ -79,14 +79,19 @@ public class ConfigReader {
             s.useDelimiter("[,\\n]");
             s.nextLine();
             while (s.hasNext()) {
-                String c1 = s.next();
-                String c2 = s.next();
-                String roadname = c1 + c2;
-                float freeflowtraveltime = s.nextFloat();
-                float capacity = s.nextFloat();
-                Road road = new Road(roadname, freeflowtraveltime, capacity);
-                ht.put(roadname, road);
-                ht.put(c2 + c1, road); // make sure it's symmetric
+                try {
+                    String c1 = s.next();
+                    String c2 = s.next();
+                    String roadname = c1 + c2;
+                    float freeflowtraveltime = s.nextFloat();
+                    float capacity = s.nextFloat();
+                    Road road = new Road(roadname, freeflowtraveltime, capacity);
+                    ht.put(roadname, road);
+                    ht.put(c2 + c1, road); // make sure it's symmetric
+                } catch (NoSuchElementException ne) {
+                    // Skip line b/c it's probably empty
+                    // TODO tell user we're skipping line
+                }
             }
         } catch (FileNotFoundException fe) {
             Logger.getLogger(ConfigReader.class.getName()).log(
