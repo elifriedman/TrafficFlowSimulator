@@ -319,7 +319,12 @@ public class FlowManager {
         fm = new FlowManager(args[0]);
         int num_iterations = fm.getNumIterations();
         for (int i = 0; i < num_iterations; i++) {
-            fm.simulate();
+            try {
+                fm.simulate();
+            } catch(Exception ex) {
+                Logger.getLogger(FlowManager.class.getName()).log(Level.SEVERE,"Problem with simulation #{0}",i+1);
+                System.exit(-1);
+            }
         }
         fm.endSimulation();
     }

@@ -7,7 +7,8 @@ var getChart = function(divName,title,titleY,datasrc,data_) {
       type: "line",
       showInLegend: true,
       name: "Route " + (i+1),
-      dataPoints: datasrc[i]
+      dataPoints: datasrc[i],
+      visible: true
     });
   }
   var chart = new CanvasJS.Chart(divName,
@@ -16,6 +17,7 @@ var getChart = function(divName,title,titleY,datasrc,data_) {
       text: title 
     },
     data: data_,
+    visible: true,
     zoomEnabled: true,
     zoomType: "xy",
     exportFileName: title,
@@ -131,11 +133,30 @@ var createParamTable = function(divID,params) {
     div.appendChild(table);
 };
 
+var changeVis = function(divObj,chartObj) {
+    var d = chartObj.options.data;
+    for(var i=0; i<d.length; i++) {
+        if(d[i].visible) d[i].visible=false;
+        else d[i].visible=true;
+    }
+    chartObj.render();
+    if(d[0].visible) divObj.innerHTML = "Turn All Off";
+    else divObj.innerHTML = "Turn All On";
+};
+
+var carChart;
+var costChart;
+var trpfChart;
+
 window.onload = function () {
   var avgCosts = getAvgCost();
-  getChart("carsContainer","# Cars per Route over time","# Cars",cars).render();
-  getChart("costsContainer","Costs per Route over time","Cost per Car",costs,[avgCosts]).render();
-  getChart("trpfContainer","Traffic Route Preference Function over time","TRPF",trpfs).render();
+  carChart = getChart("carsContainer","# Cars per Route over time","# Cars",cars);
+  carChart.render();
+  costChart = getChart("costsContainer","Costs per Route over time","Cost per Car",costs,[avgCosts]);
+  costChart.render();
+  trpfChart = getChart("trpfContainer","Traffic Route Preference Function over time","TRPF",trpfs);
+  trpfChart.render();
+
   createDataTable("carsTable",cars,"# Cars per Route");
   createDataTable("costsTable",costs,"Cost per Route",avgCosts,"Average Cost");
   createDataTable("trpfTable",trpfs,"Traffic Route Preference Function");
